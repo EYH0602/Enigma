@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/EYH0
 
 dependencies:
 - base >= 4.7 && < 5
+- array
 
 ghc-options:
 - -Wall
@@ -57,3 +58,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - Enigma
+    - QuickCheck
+    - HUnit

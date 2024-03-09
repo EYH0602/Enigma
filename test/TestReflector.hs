@@ -1,25 +1,21 @@
 module TestReflector where
 
-import Plugboard (Plugboard, connectPlugboard, newPlugboard)
+import Common (iUkwA, letters)
+import Data.Char (ord)
+import Reflector (connectReflector, newReflector)
 import Test.QuickCheck
-  ( Arbitrary (..),
-    Gen,
-    OrderedList (..),
-    Property,
-    Testable (..),
-    choose,
-    classify,
-    elements,
-    forAll,
-    frequency,
-    label,
-    oneof,
+  ( Property,
     quickCheck,
-    sample,
-    sized,
-    withMaxSuccess,
     (==>),
   )
 
+prop_iUkwA :: Char -> Property
+prop_iUkwA c =
+  (c `elem` letters)
+    ==> let reflector = newReflector iUkwA
+         in connectReflector reflector c == iUkwA !! (ord c - ord 'A')
+
 testAll :: IO ()
-testAll = putStrLn "Test suite for Reflector not yet implemented"
+testAll = do
+  putStrLn "Testing Reflector ..."
+  quickCheck prop_iUkwA

@@ -1,25 +1,48 @@
 module TestRotor where
 
-import Plugboard (Plugboard, connectPlugboard, newPlugboard)
+import Common (maxSize, rotorI)
+import Data.Char (chr, ord)
+import Data.List (nub)
+import Rotor
 import Test.QuickCheck
-  ( Arbitrary (..),
-    Gen,
-    OrderedList (..),
+  ( Gen,
     Property,
-    Testable (..),
     choose,
-    classify,
     elements,
     forAll,
-    frequency,
-    label,
-    oneof,
     quickCheck,
-    sample,
-    sized,
-    withMaxSuccess,
+    shuffle,
     (==>),
   )
 
+-- Property to test if ticking the rotor updates its position correctly
+prop_tickRotor :: Rotor -> Bool
+prop_tickRotor rotor = pos (tickRotor rotor) == (pos rotor + 1) `mod` maxSize
+
+-- Property to test ticking the rotor n times behaves as expected
+prop_tickNRotor :: Rotor -> Int -> Bool
+prop_tickNRotor rotor n =
+  pos (tickNRotor rotor n) == (pos rotor + n) `mod` maxSize
+
+-- Property to test if forward connection through a rotor maintains integrity
+prop_forwardConnectIntegrity :: Rotor -> Char -> Property
+prop_forwardConnectIntegrity rotor c =
+  let validInput = ord 'A' <= ord c && ord c <= ord 'Z'
+      output = forwardConnectRotor rotor c
+      validOutput = ord 'A' <= ord output && ord output <= ord 'Z'
+   in validInput ==> validOutput
+
+-- Property to test if backward connection through a rotor is the inverse of forward connection
+prop_backwardForwardInverse :: Rotor -> Char -> Property
+prop_backwardForwardInverse rotor c =
+  let validInput = ord 'A' <= ord c && ord c <= ord 'Z'
+      forward = forwardConnectRotor rotor c
+      backward = backwardConnectRotor rotor forward
+   in validInput ==> (c == backward)
+
 testAll :: IO ()
-testAll = putStrLn "Test suite for Rotor not yet implemented"
+testAll = do
+  quickCheck prop_tickRotor
+  quickCheck prop_tickNRotor
+  quickCheck prop_forwardConnectIntegrity
+  quickCheck prop_backwardForwardInverse

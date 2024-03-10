@@ -48,19 +48,19 @@ tickNRotor :: Rotor -> Int -> Rotor
 tickNRotor rotor n = rotor {pos = (pos rotor + n) `mod` maxSize}
 
 forwardConnectRotor :: Rotor -> Char -> Char
-forwardConnectRotor self c = chr post_pos_char
+forwardConnectRotor rotor c = chr (base + offsetOutput)
   where
-    iA = ord 'A'
-    input = ord c - iA
-    pre_mapping_idx = (maxSize + input + pos self - ring self) `mod` maxSize
-    mapped_char = mapping self !! pre_mapping_idx
-    post_pos_char = iA + (maxSize + ord mapped_char - iA - pos self + ring self) `mod` maxSize
+    base = ord 'A'
+    offsetInput = (ord c - base + pos rotor - ring rotor + maxSize) `mod` maxSize
+    mappedChar = mapping rotor !! offsetInput
+    offsetOutput = (ord mappedChar - base - pos rotor + ring rotor + maxSize) `mod` maxSize
+    
 
 backwardConnectRotor :: Rotor -> Char -> Char
-backwardConnectRotor self c = chr output
+backwardConnectRotor rotor c = chr (base + offsetOutput)
   where
-    ic = ord c
-    iA = ord 'A'
-    input = iA + (maxSize + ic - iA + pos self - ring self) `mod` maxSize
-    i = fromJust $ elemIndex (chr input) (mapping self)
-    output = iA + (maxSize - pos self + ring self + i) `mod` maxSize
+    base = ord 'A'
+    preMappedIndex = (ord c - base + pos rotor - ring rotor + maxSize) `mod` maxSize
+    inverseMappedChar = fromJust $ elemIndex (chr (base + preMappedIndex)) (mapping rotor)
+    offsetOutput = (inverseMappedChar - pos rotor + ring rotor + maxSize) `mod` maxSize
+    

@@ -2,7 +2,7 @@ module Reflector where
 
 import Data.Char (ord)
 
-newtype Reflector = Reflector {mapping :: String} deriving (Show)
+newtype Reflector = Reflector {mapping :: String} deriving (Show, Eq)
 
 newReflector :: String -> Reflector
 newReflector = Reflector

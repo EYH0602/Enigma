@@ -7,6 +7,7 @@ module Rotor
     tickNRotor,
     forwardConnectRotor,
     backwardConnectRotor,
+    rotorSetting,
   )
 where
 
@@ -22,7 +23,7 @@ data Rotor = Rotor
     ring :: Int,
     pos :: Int
   }
-  deriving (Show)
+  deriving (Eq)
 
 splitRotor :: String -> (String, String)
 splitRotor cs = (takeWhile (/= ',') cs, drop 1 (dropWhile (/= ',') cs))
@@ -54,7 +55,6 @@ forwardConnectRotor rotor c = chr (base + offsetOutput)
     offsetInput = (ord c - base + pos rotor - ring rotor + maxSize) `mod` maxSize
     mappedChar = mapping rotor !! offsetInput
     offsetOutput = (ord mappedChar - base - pos rotor + ring rotor + maxSize) `mod` maxSize
-    
 
 backwardConnectRotor :: Rotor -> Char -> Char
 backwardConnectRotor rotor c = chr (base + offsetOutput)
@@ -63,4 +63,9 @@ backwardConnectRotor rotor c = chr (base + offsetOutput)
     preMappedIndex = (ord c - base + pos rotor - ring rotor + maxSize) `mod` maxSize
     inverseMappedChar = fromJust $ elemIndex (chr (base + preMappedIndex)) (mapping rotor)
     offsetOutput = (inverseMappedChar - pos rotor + ring rotor + maxSize) `mod` maxSize
-    
+
+rotorSetting :: Rotor -> Char
+rotorSetting rotor = chr (ord 'A' + pos rotor)
+
+instance Show Rotor where
+  show = return . rotorSetting

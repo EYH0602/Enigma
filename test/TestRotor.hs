@@ -48,6 +48,7 @@ prop_backwardForwardInverse rotor c =
 
 testAll :: IO ()
 testAll = do
+  putStrLn "Testing Rotor ..."
   quickCheck prop_tickRotor
   quickCheck prop_tickNRotor
   quickCheck prop_forwardConnectIntegrity

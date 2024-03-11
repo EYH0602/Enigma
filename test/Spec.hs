@@ -5,7 +5,7 @@ import qualified TestRotor as TRo
 
 main :: IO ()
 main = do
-  TE.testAll
   TP.testAll
   TRe.testAll
   TRo.testAll
+  TE.testAll

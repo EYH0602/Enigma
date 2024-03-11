@@ -5,7 +5,7 @@ import Data.Char (ord)
 
 type CharMapping = [(Char, Char)]
 
-newtype Plugboard = Plugboard {mapping :: String} deriving (Show)
+newtype Plugboard = Plugboard {mapping :: String} deriving (Show, Eq)
 
 makeMapping :: String -> CharMapping
 makeMapping [] = []

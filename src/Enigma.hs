@@ -1,8 +1,6 @@
 module Enigma where
 
-import Common
-import Data.Char (chr, ord)
-import Data.Maybe (fromJust)
+import Control.Monad.State (State, evalState, get, put)
 import Plugboard (Plugboard, connectPlugboard', newPlugboard)
 import Reflector (Reflector, connectReflector, newReflector)
 import Rotor
@@ -27,14 +25,14 @@ data Enigma = Enigma
 -- | Creates a new Enigma machine
 -- | @param num_rotors The number of rotors used in this machine
 -- | @param rotors An array of strings describing the rotor. The first 26
--- | charactors is the mapping, or wiring. The 27th charactor must be a comma,
+-- | characters is the mapping, or wiring. The 27th character must be a comma,
 -- | followed by the notch(s). The 0th rotor is the fastest one, the last rotor
 -- | is the closest to the reflector.
 -- | @param rings The ring settings for each rotor. It is guaranteed to have a
 -- | length of `num_rotors`.
 -- | @param inits The initial setting for each rotor. It is guaranteed to have a
 -- | length of `num_rotors`.
--- | @param reflector The reflector mapping, or wiring in a 26 charactor string.
+-- | @param reflector The reflector mapping, or wiring in a 26 character string.
 -- | @param num_pairs The number of cables in the plugboard, i.e. the number of
 -- | pairs of letters swapped.
 -- | @param pairs A string with `2*num_pairs` characters describing how letters
@@ -48,51 +46,52 @@ newEnigma nr str_rs rings inits str_refl np ps = do
   board <- newPlugboard np ps
   return (Enigma nr arr refl board)
 
-tickEnigma :: Enigma -> Enigma
-tickEnigma enigma@(Enigma {num_rotors = 0}) = enigma
-tickEnigma enigma@(Enigma {rotors = rs}) = enigma {rotors = tickRotors rs True}
+tick :: Enigma -> Enigma
+tick enigma@(Enigma {num_rotors = 0}) = enigma
+tick enigma@(Enigma {rotors = rs}) = enigma {rotors = tickRotors rs True}
   where
     tickRotors :: [Rotor] -> Bool -> [Rotor]
     tickRotors [] _ = []
     tickRotors [lastR] tickLast
       | tickLast = [tickRotor lastR]
       | otherwise = [lastR]
-    tickRotors (r1 : r2 : rs) tickLast =
+    tickRotors (r1 : r2 : _rs) tickLast =
       let tickSelf = isNotch r1 && not (noDoubleStep r2)
           r1Ticked = if tickLast || tickSelf then tickRotor r1 else r1
-       in r1Ticked : tickRotors (r2 : rs) tickSelf
+       in r1Ticked : tickRotors (r2 : _rs) tickSelf
+
+tickEnigma :: State Enigma ()
+tickEnigma = do
+  enigma <- get
+  let tickedEnigma = tick enigma
+  put tickedEnigma
 
 tickNEnigma :: Enigma -> Int -> Enigma
 tickNEnigma enigma 0 = enigma
-tickNEnigma enigma n = tickNEnigma (tickEnigma enigma) (n - 1)
+tickNEnigma enigma n = tickNEnigma (tick enigma) (n - 1)
 
-encryptEnigma :: Enigma -> String -> String
-encryptEnigma _ [] = []
-encryptEnigma initEnigma (c : cs) =
-  let (tickedEnigma, encryptedChar) = encryptChar initEnigma c
-   in encryptedChar : encryptEnigma tickedEnigma cs
+encrypt :: Enigma -> String -> String
+encrypt enigma msg = evalState (mapM encryptChar msg) enigma
 
-encryptChar :: Enigma -> Char -> (Enigma, Char)
-encryptChar e ' ' = (e, ' ')
-encryptChar enigma char = (tickedEnigma, finalOutput)
-  where
-    -- initial tick for each character to be encrypted
-    tickedEnigma = tickEnigma enigma
+encryptChar :: Char -> State Enigma Char
+encryptChar char = do
+  tickEnigma
+  enigma <- get -- ticked enigma
+  -- passing through the plugboard
+  let afterPlugboard = connectPlugboard' (plugboard enigma) char
 
-    -- passing through the plugboard
-    afterPlugboard = connectPlugboard' (plugboard tickedEnigma) char
+  -- passing forward through the rotors
+  let forwardRotors = foldl (flip forwardConnectRotor) afterPlugboard (rotors enigma)
 
-    -- passing forward through the rotors
-    forwardRotors = foldl (flip forwardConnectRotor) afterPlugboard (rotors tickedEnigma)
+  -- reflection
+  let reflected = connectReflector (reflector enigma) forwardRotors
 
-    -- reflection
-    reflected = connectReflector (reflector tickedEnigma) forwardRotors
+  -- passing backward through the rotors
+  let backwardRotors = foldr backwardConnectRotor reflected (rotors enigma)
 
-    -- passing backward through the rotors
-    backwardRotors = foldr backwardConnectRotor reflected (rotors tickedEnigma)
-
-    -- final pass through the plugboard
-    finalOutput = connectPlugboard' (plugboard tickedEnigma) backwardRotors
+  -- final pass through the plugboard
+  let encodedChar = connectPlugboard' (plugboard enigma) backwardRotors
+  return encodedChar
 
 getSetting :: Enigma -> String
 getSetting = map rotorSetting . rotors

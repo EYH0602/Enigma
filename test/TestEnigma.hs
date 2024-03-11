@@ -17,7 +17,7 @@ testTick =
   TestCase
     ( do
         assertEqual "show enigma153 rotors" "BFD" (show enigma153)
-        assertEqual "tick enigma153 once" "CFD" (show (tickEnigma enigma153))
+        assertEqual "tick enigma153 once" "CFD" (show (tick enigma153))
         assertEqual "tick enigma153 153 times" "YLD" (show (tickNEnigma enigma153 153))
     )
 
@@ -30,7 +30,7 @@ testEnigmaOneRotorWORing =
         let inits = [1]
         let enigma = fromJust $ newEnigma 1 rotors rings inits iUkwA 0 ""
         let plaintext = "C"
-        let ciphertext = encryptEnigma enigma plaintext
+        let ciphertext = encrypt enigma plaintext
         assertEqual "Encrypting 'C' with rotor I UKW B" "E" ciphertext
     )
 

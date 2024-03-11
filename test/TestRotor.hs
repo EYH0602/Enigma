@@ -1,11 +1,12 @@
 module TestRotor where
 
-import Common (maxSize, rotorI)
+import Common
 import Data.Char (chr, ord)
 import Data.List (nub)
 import Rotor
 import Test.QuickCheck
-  ( Gen,
+  ( Arbitrary (..),
+    Gen,
     Property,
     choose,
     elements,
@@ -14,6 +15,11 @@ import Test.QuickCheck
     shuffle,
     (==>),
   )
+
+instance Arbitrary Rotor where
+  arbitrary = do
+    rotorConfig <- elements [rotorI, rotorII, rotorIII, rotorIV, rotorV]
+    return (newRotor rotorConfig 0 0)
 
 -- Property to test if ticking the rotor updates its position correctly
 prop_tickRotor :: Rotor -> Bool

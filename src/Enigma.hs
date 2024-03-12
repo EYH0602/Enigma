@@ -68,10 +68,11 @@ tickNEnigma :: Enigma -> Int -> Enigma
 tickNEnigma enigma 0 = enigma
 tickNEnigma enigma n = tickNEnigma (tick enigma) (n - 1)
 
-encrypt :: Enigma -> String -> String
-encrypt enigma msg = evalState (mapM encryptChar msg) enigma
+encryptEnigma :: Enigma -> String -> String
+encryptEnigma enigma msg = evalState (mapM encryptChar msg) enigma
 
 encryptChar :: Char -> State Enigma Char
+encryptChar ' ' = return ' '
 encryptChar char = do
   tickEnigma
   enigma <- get -- ticked enigma

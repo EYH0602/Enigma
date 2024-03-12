@@ -30,7 +30,7 @@ testEnigmaOneRotorWORing =
         let inits = [1]
         let enigma = fromJust $ newEnigma rotors rings inits iUkwA 0 ""
         let plaintext = "C"
-        let ciphertext = encrypt enigma plaintext
+        let ciphertext = encryptEnigma enigma plaintext
         assertEqual "Encrypting 'C' with rotor I UKW B" "E" ciphertext
     )
 

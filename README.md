@@ -1,12 +1,13 @@
-# Enigma
+# Enigma Machine
 
-A Haskell implementation of [ECS153-hw2-Enigma](https://github.com/ecs36c-sq2023/ECS153-hw2-Enigma) for fun :).
+A simple practice of the state monad :).
 
 ## Usage
 
 ```bash
-stack build
-stack exec Enigma-exe
+> stack build
+> stack exec Enigma-exe -- --message="HELLO WORLD"
+INNBE CUZWY
 ```
 
 ## Tests

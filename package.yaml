@@ -24,6 +24,7 @@ dependencies:
   - array
   - HUnit
   - mtl
+  - cmdargs >= 0.10
 
 ghc-options:
   - -Wall

@@ -15,22 +15,18 @@ import Rotor
   )
 
 data Enigma = Enigma
-  { num_rotors :: Int,
-    rotors :: [Rotor],
+  { rotors :: [Rotor],
     reflector :: Reflector,
     plugboard :: Plugboard
   }
 
 -- | Creates a new Enigma machine
--- | @param num_rotors The number of rotors used in this machine
 -- | @param rotors An array of strings describing the rotor. The first 26
 -- | characters is the mapping, or wiring. The 27th character must be a comma,
 -- | followed by the notch(s). The 0th rotor is the fastest one, the last rotor
 -- | is the closest to the reflector.
--- | @param rings The ring settings for each rotor. It is guaranteed to have a
--- | length of `num_rotors`.
--- | @param inits The initial setting for each rotor. It is guaranteed to have a
--- | length of `num_rotors`.
+-- | @param rings The ring settings for each rotor.
+-- | @param inits The initial setting for each rotor.
 -- | @param reflector The reflector mapping, or wiring in a 26 character string.
 -- | @param num_pairs The number of cables in the plugboard, i.e. the number of
 -- | pairs of letters swapped.
@@ -38,12 +34,14 @@ data Enigma = Enigma
 -- | are swapped. Letter `pairs[i * 2]` is swapped with `pairs[i * 2 + 1]`, vice
 -- | versa.
 -- | @return An initialized machine.
-newEnigma :: Int -> [String] -> [Int] -> [Int] -> String -> Int -> String -> Maybe Enigma
-newEnigma nr str_rs rings inits str_refl np ps = do
-  let arr = map (\(s, r, i) -> newRotor s r i) (zip3 str_rs rings inits)
-  let refl = newReflector str_refl
-  board <- newPlugboard np ps
-  return (Enigma nr arr refl board)
+newEnigma :: [String] -> [Int] -> [Int] -> String -> Int -> String -> Maybe Enigma
+newEnigma str_rs rings inits str_refl np ps
+  | length str_rs /= length rings || length rings /= length inits = Nothing
+  | otherwise = do
+      let arr = map (\(s, r, i) -> newRotor s r i) (zip3 str_rs rings inits)
+      let refl = newReflector str_refl
+      board <- newPlugboard np ps
+      return (Enigma arr refl board)
 
 tick :: Enigma -> Enigma
 tick enigma@(Enigma {rotors = rs})

@@ -20,7 +20,6 @@ data Enigma = Enigma
     reflector :: Reflector,
     plugboard :: Plugboard
   }
-  deriving (Eq)
 
 -- | Creates a new Enigma machine
 -- | @param num_rotors The number of rotors used in this machine
@@ -47,8 +46,9 @@ newEnigma nr str_rs rings inits str_refl np ps = do
   return (Enigma nr arr refl board)
 
 tick :: Enigma -> Enigma
-tick enigma@(Enigma {num_rotors = 0}) = enigma
-tick enigma@(Enigma {rotors = rs}) = enigma {rotors = tickRotors rs True}
+tick enigma@(Enigma {rotors = rs})
+  | null rs = enigma
+  | otherwise = enigma {rotors = tickRotors rs True}
   where
     tickRotors :: [Rotor] -> Bool -> [Rotor]
     tickRotors [] _ = []
